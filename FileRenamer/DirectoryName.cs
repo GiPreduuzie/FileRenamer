@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FileRenamer
 {
-    public class DirectoryName
+    class DirectoryName
     {
         private readonly string _value;
         public DirectoryName(string value)

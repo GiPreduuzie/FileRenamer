@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FileRenamer
 {
-    public class Artist
+    class Artist
     {
         private IList<SongDirectory> _directories;
         string _artist;

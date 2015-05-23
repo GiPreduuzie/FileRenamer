@@ -2,19 +2,20 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Id3Lib;
 using Mp3Lib;
 
 namespace FileRenamer
 {
-    public interface INamePattern
+    internal interface INamePattern
     {
         string PatternString { get; }
 
         FileNamingModel BuildModel(string fileName, FileNamingModel model);
     }
 
-    public class FileNamingModel
+    internal class FileNamingModel
     {
         public string Album { get; set; }
 
@@ -26,21 +27,7 @@ namespace FileRenamer
 
         public DateTime? DateTime { get; set; }
 
-        public FileModel File { get; set; }
-    }
-
-    public class FileModel
-    {
-        public FileModel(string value)
-        {
-            FullName = value;
-            Extention = Path.GetExtension(value);
-            Name = Path.GetFileNameWithoutExtension(value);
-        }
-
-        public string FullName { get ; private set; }
-        public string Name { get; private set; }
-        public string Extention { get; private set; }
+        public string File { get; set; }
     }
 
     internal class FirstPattern : INamePattern
@@ -129,7 +116,7 @@ namespace FileRenamer
     }
 
 
-    public class FileUpdater
+    class FileUpdater
     {
         private readonly string _originfileName;
         private readonly Mp3File _originalMp3File;
@@ -137,15 +124,13 @@ namespace FileRenamer
         private readonly int _musicFilesInTheDirectory;
         private Track _trackHelper;
         private FileNamingModel _namingModel;
-        private int _index;
 
-        public FileUpdater(string fileName, int index, string relatedPathToFile, int musicFilesInTheDirectory)
+        public FileUpdater(string fileName, string relatedPathToFile, int musicFilesInTheDirectory)
         {
             _relatedPathToFile = relatedPathToFile;
             _musicFilesInTheDirectory = musicFilesInTheDirectory;
             _originfileName = fileName;
             _originalMp3File = BuildMp3File(_originfileName);
-            _index = index;
 
             _namingModel = new FileNamingModel();
         }
@@ -177,7 +162,7 @@ namespace FileRenamer
             _namingModel.Album = Decode(_originalMp3File.TagHandler.Album);
             _namingModel.Artist = Decode(_originalMp3File.TagHandler.Artist);
             _namingModel.Song = Decode(_originalMp3File.TagHandler.Song);
-            _namingModel.File = new FileModel(_originfileName);
+            _namingModel.File = _originfileName;
 
             var track = _originalMp3File.TagHandler.Track;
             var fileNameHelper = new FileName(Path.GetFileNameWithoutExtension(_originfileName));

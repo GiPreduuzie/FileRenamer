@@ -5,189 +5,30 @@ using System.Linq;
 
 namespace FileRenamer
 {
-    public interface IExplorer
-    {
-        IEnumerable<SongDirectory> GetDirectories(string rootPath);
-        IEnumerable<SongDirectory> ReadAndGetDirectories(string rootPath);
-    }
-
-    public class SimpleDirectory
-    {
-        private readonly string _rootPath;
-        private readonly string _relatedLocation;
-        private readonly IEnumerable<string> _files;
-
-        public SimpleDirectory(string rootPath, string relatedLocation, IEnumerable<string> files)
-        {
-            _rootPath = rootPath;
-            _relatedLocation = relatedLocation;
-            _files = files;
-        }
-
-        public IEnumerable<string> Files
-        {
-            get { return _files; }
-        }
-
-        public string RootPath
-        {
-            get { return _rootPath; }
-        }
-
-        public string RelatedLocation
-        {
-            get { return _relatedLocation; }
-        }
-    }
-
-    public interface IFileEnumerator
-    {
-        IEnumerable<SimpleDirectory> GetDirectories(string rootPath);
-    }
-
-    public class SimpleFileEnumerator : IFileEnumerator
-    {
-        public IEnumerable<SimpleDirectory> GetDirectories(string rootPath)
-        {
-            return GetDirectories(rootPath, string.Empty);
-        }
-
-        public IEnumerable<SimpleDirectory> GetDirectories(string rootPath, string relatedLocation)
-        {
-            return new List<SimpleDirectory>
-            {
-                new SimpleDirectory(rootPath, relatedLocation, Directory.GetFiles(rootPath, "*.mp3"))
-            };
-        }
-    }
-
-    public class FileEnumerator : IFileEnumerator
-    {
-        SimpleFileEnumerator _simpleEnumerator;
-
-        public IEnumerable<SimpleDirectory> GetDirectories(string rootPath)
-        {
-            return GetDirectories(rootPath, string.Empty);
-        }
-
-        private IEnumerable<SimpleDirectory> GetDirectories(string rootPath, string relatedLocation)
-        {
-            var directories = Directory.GetDirectories(rootPath).ToList();
-
-            var result = _simpleEnumerator.GetDirectories(rootPath, relatedLocation);
-
-            foreach (var directory in directories)
-            {
-                result.Union(GetDirectories(directory, Path.Combine(relatedLocation, GetDirectoryName(directory))));
-            }
-
-            return result;
-        }
-
-        private string GetDirectoryName(string absoluteLocation)
-        {
-            return absoluteLocation.Split(Path.DirectorySeparatorChar).Reverse().Take(1).Single();
-        }
-    }
-
-    public class SongDirectoryConstructor
-    {
-        public SongDirectory ConstructFromPreform(SimpleDirectory simpleDirectory)
-        {
-            return
-                new SongDirectory(
-                    simpleDirectory.RootPath,
-                    simpleDirectory.RelatedLocation,
-                    new DirectoryName(simpleDirectory.RootPath),
-                    simpleDirectory.Files.Select((file, index) => CreateFileUpdater(index, file, simpleDirectory)).ToList());
-        }
-
-        private FileUpdater CreateFileUpdater(int index, string file, SimpleDirectory simpleDirectory)
-        {
-            return new FileUpdater(
-                file,
-                index,
-                simpleDirectory.RelatedLocation,
-                simpleDirectory.Files.Count());
-        }
-    }
-
-
-    public class DirectoryProvider : IExplorer
-    {
-        private readonly IFileEnumerator _fileEnumerator;
-        private SongDirectoryConstructor _songDirectoryConstructor;
-
-        public DirectoryProvider(IFileEnumerator fileEnumerator, SongDirectoryConstructor songDirectoryConstructor)
-        {
-            _fileEnumerator = fileEnumerator;
-            _songDirectoryConstructor = songDirectoryConstructor;
-        }
-
-        public IEnumerable<SongDirectory> GetDirectories(string rootPath)
-        {
-            var directories = _fileEnumerator.GetDirectories(rootPath).ToList();
-            return directories.Select(_songDirectoryConstructor.ConstructFromPreform);
-        }
-
-        public IEnumerable<SongDirectory> ReadAndGetDirectories(string rootPath)
-        {
-            var directories = GetDirectories(rootPath).ToList();
-            foreach (var songDirectory in directories)
-            {
-                Explore(songDirectory);
-            }
-            return directories;
-        }
-
-        private void Explore(SongDirectory songDirectory)
-        {
-            int i = 1;
-            foreach (var fileUpdater in songDirectory.FileUpdaters)
-            {
-                try
-                {
-                    fileUpdater.Initialize();
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Warning! Fail to read file " + fileUpdater.OriginFile);
-                }
-                i++;
-            }
-
-            foreach (var fileUpdater in songDirectory.FileUpdaters)
-            {
-                fileUpdater.ExploreModel();
-            }
-        }
-    }
-
-
-    public class Explorer
+    class Explorer
     {
         private readonly string _pathToRoot;
-        DirectoryProvider _directoryProvider;
+        private IList<SongDirectory> _directories = new List<SongDirectory>();
 
-        public Explorer(DirectoryProvider directoryProvider)
+        public Explorer(string pathToRoot)
         {
-            _directoryProvider = directoryProvider;
+            _pathToRoot = pathToRoot;
         }
 
-        public void Explore(string pathToRoot, bool usePositionAsTrackNumber, INamePattern namePattern, AskUser userAsker)
+        public void Explore(bool usePositionAsTrackNumber, INamePattern namePattern, AskUser userAsker)
         {
-            var directories = _directoryProvider.ReadAndGetDirectories(pathToRoot).ToList();
+            Explore(_pathToRoot, usePositionAsTrackNumber);
 
-            directories = directories.Where(item => item.Songs.Any()).ToList();
+            _directories = _directories.Where(item => item.Songs.Any()).ToList();
 
-            foreach (var directory in directories.Where(item => item.HasQuestion))
+            foreach( var directory in _directories.Where(item => item.HasQuestion))
             {
                 userAsker.AboutDirectory(directory);
             }
 
-            directories = directories.Where(item => !item.IsIgnored).ToList();
+            _directories = _directories.Where(item => !item.IsIgnored).ToList();
 
-            var artists = directories
+            var artists = _directories
                 .GroupBy(item => item.ParentFolderName)
                 .Select(item => new Artist(item.ToList(), item.First().ParentFolderName))
                 .ToList();
@@ -198,9 +39,9 @@ namespace FileRenamer
                 userAsker.AboutArtist(artist);
             }
 
-            foreach (var directory in directories)
+            foreach (var direcortory in _directories)
             {
-                foreach (var song in directory.Songs)
+                foreach (var song in direcortory.Songs)
                 {
                     try
                     {
@@ -218,6 +59,57 @@ namespace FileRenamer
             }
         }
 
+        private void Explore(string rootPath, bool usePositionAsTrackNumber)
+        {
+            var directories = Directory.GetDirectories(rootPath).ToList();
+
+            foreach (var directory in directories)
+            {
+                Explore(directory, usePositionAsTrackNumber);
+            }
+
+            var files = Directory.GetFiles(rootPath, "*.mp3").ToList();
+            var fileUpdaters =
+                files.Select(
+                    item =>
+                        new FileUpdater(item,
+                            Path.GetDirectoryName(item).Substring(Path.GetDirectoryName(_pathToRoot).Length + 1),
+                            files.Count)).ToList();
+
+            int i = 1 + 46;
+            foreach (var fileUpdater in fileUpdaters)
+            {
+                try
+                {
+                    if (usePositionAsTrackNumber)
+                    {
+                        fileUpdater.FileNamingModel.Track = i.ToString();
+                        fileUpdater.ExploreAttributes();
+                    }
+                   
+                    fileUpdater.Initialize();
+
+                    if (usePositionAsTrackNumber)
+                    {
+                        fileUpdater.FileNamingModel.Track = i.ToString();
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Warning! Fail to read file " + fileUpdater.OriginFile);
+                }
+                i++;
+            }
+
+            foreach (var fileUpdater in fileUpdaters)
+            {
+                fileUpdater.ExploreModel();
+                //fileUpdater.ConvertToV1();
+            }
+
+            _directories.Add(new SongDirectory(rootPath, _pathToRoot, new DirectoryName(rootPath), fileUpdaters));
+        }
+        
 
         //private void FixArtist(string file)
         //{

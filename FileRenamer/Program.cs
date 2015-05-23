@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Linq;
 
 namespace FileRenamer
 {
-    public interface IPatternSelector
+    internal class PatternSelector
     {
-        void AddPattern(INamePattern namePattern);
-        INamePattern Select();
-    }
-
-
-    public class PatternSelector : IPatternSelector
-    {
-        readonly IList<INamePattern> _patterns;
-        readonly AskUser _askUser;
+        IList<INamePattern> _patterns;
+        AskUser _askUser;
 
         public PatternSelector(AskUser askUser)
         {
@@ -33,41 +27,6 @@ namespace FileRenamer
         }
     }
 
-    public class Binder
-    {
-        private IPatternSelector _patternSelector;
-
-        public Binder(IPatternSelector patternSelector)
-        {
-            _patternSelector = patternSelector;
-        }
-
-        public IExplorer GetExplorer()
-        {
-            return CreateDirectoryProvider();
-        }
-
-        public Explorer GetRenamer()
-        {
-            return new Explorer(CreateDirectoryProvider());
-        }
-
-        public IPatternSelector GetPatternSelector()
-        {
-            _patternSelector.AddPattern(new FirstPattern());
-            _patternSelector.AddPattern(new SecondPattern());
-            _patternSelector.AddPattern(new ThirdPattern());
-            _patternSelector.AddPattern(new GeneralPattern());
-
-            return _patternSelector;
-        }
-
-        private DirectoryProvider CreateDirectoryProvider()
-        {
-            return new DirectoryProvider(new SimpleFileEnumerator(), new SongDirectoryConstructor());
-        }
-    }
-
 
     class Program
     {
@@ -75,11 +34,13 @@ namespace FileRenamer
         {
             Console.WriteLine("Input path to root folder:");
             var pathToRoot = Console.ReadLine();
-
-            var userAsker = new AskUser(new ConsoleUserAsker());
-            var patternSelector = new Binder(new PatternSelector(userAsker)).GetPatternSelector();
-            
-            new Explorer(new DirectoryProvider(new FileEnumerator(), new SongDirectoryConstructor())).Explore(pathToRoot, true, patternSelector.Select(), userAsker);
+            var userAsker = new AskUser();
+            var patternSelector = new PatternSelector(userAsker);
+            patternSelector.AddPattern(new FirstPattern());
+            patternSelector.AddPattern(new SecondPattern());
+            patternSelector.AddPattern(new ThirdPattern());
+            patternSelector.AddPattern(new GeneralPattern());
+            new Explorer(pathToRoot).Explore(true, patternSelector.Select(), userAsker);
         }
     }
 }
