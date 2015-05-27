@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{503E5E70-75AF-4B77-89A4-D5E1A0A52327}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DecompiledMp3Lib</RootNamespace>
+    <AssemblyName>DecompiledMp3Lib</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\3rdParty\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Mp3Lib\AudioFrameHeader.cs" />
+    <Compile Include="Mp3Lib\AudioFile.cs" />
+    <Compile Include="Mp3Lib\Audio.cs" />
+    <Compile Include="Mp3Lib\AudioFrame.cs" />
+    <Compile Include="Mp3Lib\AudioFrameFactory.cs" />
+    <Compile Include="Mp3Lib\AudioFrameXingHeader.cs" />
+    <Compile Include="Mp3Lib\AudioFrameVbriHeader.cs" />
+    <Compile Include="Mp3Lib\InvalidVbrSizeException.cs" />
+    <Compile Include="FileMover\FileMover.cs" />
+    <Compile Include="Mp3Lib\IAudio.cs" />
+    <Compile Include="Id3Lib\FrameHelper.cs" />
+    <Compile Include="Id3Lib\TagManager.cs" />
+    <Compile Include="Id3Lib\Exceptions\TagNotFoundException.cs" />
+    <Compile Include="Id3Lib\Sync.cs" />
+    <Compile Include="Id3Lib\TagExtendedHeader.cs" />
+    <Compile Include="Id3Lib\Swap.cs" />
+    <Compile Include="Id3Lib\TagHeader.cs" />
+    <Compile Include="Id3Lib\Frames\FrameFullText.cs" />
+    <Compile Include="Id3Lib\Frames\FrameUnknown.cs" />
+    <Compile Include="Id3Lib\FrameFactory.cs" />
+    <Compile Include="Mp3Lib\Memory.cs" />
+    <Compile Include="Id3Lib\Exceptions\InvalidFrameException.cs" />
+    <Compile Include="Id3Lib\TextBuilder.cs" />
+    <Compile Include="Id3Lib\Frames\PictureTypeCode.cs" />
+    <Compile Include="Id3Lib\Frames\FrameAttribute.cs" />
+    <Compile Include="Id3Lib\Frames\IFrameDescription.cs" />
+    <Compile Include="Id3Lib\Frames\FramePicture.cs" />
+    <Compile Include="Id3Lib\TextCode.cs" />
+    <Compile Include="Id3Lib\Exceptions\InvalidTagException.cs" />
+    <Compile Include="Id3Lib\Frames\FrameBase.cs" />
+    <Compile Include="Id3Lib\Frames\FrameText.cs" />
+    <Compile Include="Id3Lib\Id3V1.cs" />
+    <Compile Include="Mp3Lib\InvalidAudioFrameException.cs" />
+    <Compile Include="Id3Lib\Exceptions\InvalidStructureException.cs" />
+    <Compile Include="Id3Lib\TagHandler.cs" />
+    <Compile Include="Id3Lib\TagModel.cs" />
+    <Compile Include="Mp3Lib\Mp3FileData.cs" />
+    <Compile Include="Mp3Lib\Mp3File.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
