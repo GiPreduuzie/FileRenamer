@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Calendar.Properties
+namespace TextAnalystUi.Properties
 {
 
 

@@ -65,6 +65,11 @@ namespace FileRenamer
     {
         SimpleFileEnumerator _simpleEnumerator;
 
+        public FileEnumerator(SimpleFileEnumerator simpleEnumerator)
+        {
+            _simpleEnumerator = simpleEnumerator;
+        }
+
         public IEnumerable<SimpleDirectory> GetDirectories(string rootPath)
         {
             return GetDirectories(rootPath, string.Empty);
