@@ -1,0 +1,39 @@
+class SomeWrapper [T] (val item : T )
+
+object SomeObject {
+  def main (args: Array[String])
+  {
+    val someClass = new SomeClass[List](new ListFactory)
+
+    val l1 : List[Int] = someClass.Do(1)
+    val l2 : List[String] = someClass.Do("2")
+
+
+    val someClass2 = new SomeClass[SomeWrapper](new SomeWrapperFactory)
+
+    val s1 : SomeWrapper[Int] = someClass2.Do(1)
+    val s2 : SomeWrapper[String] = someClass2.Do("2")
+
+    someClass.Do("2")
+
+    val a = None
+  }
+}
+
+trait Factory[T[_]] {
+  def Create[TValue](value : TValue) : T[TValue]
+}
+
+class ListFactory extends Factory[List] {
+  override def Create[TValue](value: TValue): List[TValue] = List(value)
+}
+
+class SomeWrapperFactory extends Factory[SomeWrapper] {
+  override def Create[TValue](value: TValue): SomeWrapper[TValue] = new SomeWrapper(value)
+}
+
+class SomeClass[T[_]] (val factory: Factory[T]) {
+  def Do[TNew](value: TNew): T[TNew] = {
+    factory.Create[TNew](value)
+  }
+}
