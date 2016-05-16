@@ -8,14 +8,40 @@ newtype Parser a = Parser (String -> [(a, String)])
 instance Functor Parser where
     fmap func p = Parser (\ cs -> [(func value, cs') | (value, cs') <- parser p cs])
     
-instance Applicative Parser where
---  pure  :: a -> f a
---  (<*>) :: f (a -> b) -> f a -> f b
+-- instance Applicative Parser where
+-- --  pure  :: a -> f a
+-- --  (<*>) :: f (a -> b) -> f a -> f b
 
-    pure x = Parser (\cs -> [(x, cs)])
-    left <*> right = undefined
+    -- pure x = Parser (\cs -> [(x, cs)])
+    -- left <*> right = undefined
 
 parser (Parser f) = f 
+
+-- class Monad m where
+-- return :: a -> m a
+-- (>>=) :: m a -> (a -> m b) -> m b
+
+monadicFun a = a >>= (\ x1 -> return (x1 + 1) 
+                   >>= (\ x2 -> return (show x2)
+                     >>= (\ x3 -> return (x3 ++ "asdfasf" ++ (show x1)) )))
+                     
+monadicFun' a = do x1 <- a
+                   let x2 = x1 + 1
+                   let x3 = show x2
+                   return (x3 ++ "asdfasf" ++ (show x1))
+                   
+monadList list1 list2 = 
+ do 
+    a <- list1
+    b <- list2
+    return (a,b)
+
+                     
+
+
+-- do 
+ -- a <- List1
+ -- b <- 
 
 instance Monad Parser where
     return a = Parser (\cs -> [(a, cs)])
@@ -68,7 +94,41 @@ chainl1 p op = do
                                rest' (f a b)
                    rest' a = rest a `add` return a
 
-add (Parser left) (Parser right) = Parser (\cs -> (left cs) ++ (right cs))
+add (Parser left) (Parser right) = Parser (\cs -> case (left cs) ++ (right cs) of 
+                                                    [] -> []
+                                                    (x:xs) -> [x])
+
+-- expr ::= expr addop term | term
+-- term ::= term mulop factor | factor
+-- factor ::= digit | ( expr )
+-- digit ::= 0 | 1 | . . . | 9
+-- addop ::= + | -
+-- mulop ::= * | /
+
+
+
+expr = chainl1 term   addop
+term = chainl1 factor mulop
+factor = digit `add` do {namely '('; x <- expr; namely ')'; return x}
+digit =  do 
+           letters <- many1 (probably isDigit)
+           let digits = map (\x -> ord x - ord '0') letters
+           return $ foldr (\ y accum -> accum*10 + y) 0 (reverse digits)
+           
+addop = operator (namely '+') (+) `add` operator (namely '-') (-) 
+mulop = operator (namely '*') (*) `add` operator (namely '/') div 
+
+
+main = 
+    do
+       x <- getLine
+       if x == "" then return () else continue x
+    where continue x = 
+           do  
+             let result = parser expr x
+             putStrLn (show result)
+             main
+     
 
  
 test1 value =

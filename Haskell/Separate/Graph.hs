@@ -1,4 +1,8 @@
 import Data.List
+import Control.Monad
+
+--selectMany f xs = foldl (\ x accum -> accum ++ (f x)) []
+--selectMany = foldl (++) []
 
 data Mark = Infinity | Value Integer
 instance Show Mark where
@@ -43,32 +47,51 @@ otherVertecies = (Vertex "1" (Value 0)) : (map (\ x -> Vertex x Infinity) (map s
 
 getOutgoingWays vertex edges = [ (b, Value cost) | (Edge a b cost) <- edges, a == vertex]
 
+takeCost :: Eq a => a -> [(a, Mark)] -> Mark
 takeCost vertex edges = 
                  case ways of
-                  [] -> Infinity
-                  (x:xs) -> foldr min [] ways
+                  []     -> Infinity
+                  (x:xs) -> foldr min x xs
                   where ways = [cost | (x, cost) <- edges, x == vertex]
 
-getWayCosts edges vertecies = [(x, takeCost x edges) | x <- vertecies ]
+                  
+getWayCosts :: Eq a => [(a, Mark)] -> [a] -> [(a, Mark)]
+getWayCosts edges vertecies = map  (\x -> (x, takeCost x edges)) vertecies
 
+buildVertex:: String -> Mark -> Mark -> Mark -> Vertex
 buildVertex name mark mark' cost = Vertex name (min mark newMark) where newMark = addToMark mark' cost
 
-newVertecies (Vertex name' mark') edgesWithCost = 
-                 [buildVertex name mark mark' cost | ((Vertex name mark), cost) <- edgesWithCost]
+--newVertecies (Vertex _ mark') edgesWithCost = [buildVertex name mark mark' cost | ((Vertex name mark), cost) <- edgesWithCost]
 
-getNewVertecies startVertex otherVertecies edges = 
-                 newVertecies startVertex edgesWithCost
-				   where
-				    outgoingWays = getOutgoingWays startVertex edges
-				    edgesWithCost = getWayCosts outgoingWays otherVertecies
 
-finder startVertex otherVertecies edges = 
-                 let vertecies' = getNewVertecies startVertex otherVertecies edges
-			--	 in (foldl (:) [] (sort vertecies'))
+newVertecies mark' ((Vertex name mark), cost) = buildVertex name mark mark' cost
 
-				 in case (sort vertecies') of
+-- newVertecies :: Vertex -> [(Vertex, Mark)] -> [Vertex]
+-- newVertecies (Vertex _ mark') = map (\((Vertex name mark), cost) -> buildVertex name mark mark' cost)
+
+getNewVertecies startVertex edges = 
+                      (newVertecies . getMark $ startVertex) . (addCost)
+				           where
+                            outgoingWays = getOutgoingWays startVertex edges
+                            addCost x = (x, takeCost x outgoingWays)
+                            getMark (Vertex _ x) = x
+                            
+                            
+doer [] = []
+doer (x:xs) = x : (sort xs)
+
+                            
+finder' startVertex  getNewVertecies' otherVertecies = 
+                 let vertecies' = getNewVertecies' startVertex otherVertecies
+			     in case vertecies' of
 				  []     -> []
-				  (x:xs) -> x : (finder x xs edges)
+				  (x:xs) ->  y : (finder' y  getNewVertecies' ys) where (y:ys) = sort (x:xs)
+                  
+finder :: Vertex -> [Vertex] -> [Edge] -> [Vertex]
+finder startVertex otherVertecies edges =     
+    finder' startVertex (\x -> map $ getNewVertecies x edges) $ otherVertecies
+                  
+
 
 
 s' = Vertex "1" (Value 0)
@@ -80,18 +103,17 @@ e' = [(1, [(2,7),  (3,9),  (6,14)]),
 	  (5, [(6,9)])]
 
 buildVertex' x = Vertex name Infinity where name = show x
-selectMany f xs = foldl (\ x accum -> accum ++ (f x)) []
 
-i  = [(buildVertex' x, edges) | x <- e']
-ii = 
+
+--i  = [(buildVertex' x, edges) | x <- e']
+--ii = 
 
 buildEdge vl vr cost = Edge (Vertex (show vl) Infinity) (Vertex (show vr) Infinity) cost
 
 
-res = [ [ [buildEdge vl vr cost, buildEdge vr vl cost] | (vl, cost) <- es]  | (vr, es) <- e' ]
+res buildEdge = [ [ [buildEdge vl vr cost, buildEdge vr vl cost] | (vl, cost) <- es]  | (vr, es) <- e' ]
 
-selectMany = foldl (++) []
+result = s' : (finder s' v' edges') where edges' = join . join $ res buildEdge
 
-edges' = selectMany (selectMany res)
 
-result = s' : (finder s' v' edges')
+

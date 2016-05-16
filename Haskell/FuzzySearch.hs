@@ -1,14 +1,19 @@
 import Data.List
+--todo : ignore case
+--"ad" -> ^a.*d.*$ -> ^ad.*
+--"*ad" -> a.*d 
 
 fromWord = "dagestan"
 toWord = "arestant"
 
-addCost    x = 1
-deleteCost x = 1
--- addCost Nothing   = 1 
+-- addCost    x = 1
+-- deleteCost x = 1
 
--- deleteCost (Just _)  = 1
--- deleteCost Nothing   = 1
+addCost (Just _)  = 1
+addCost Nothing   = 1
+
+deleteCost (Just _)  = 1
+deleteCost Nothing   = 1
 
 --weightCell add delete substitute = min (min (add + addCost $ ) (delete + deleteCost)) substitute--
 
@@ -73,11 +78,15 @@ test4 list =
               y <- list
               
               return (x, y, (do' x y))
- in take 20 (filter (\ (_, _, x) -> x /= 0) (sortOn (\ (_, _, x) -> x) list' ))
+ in filter (\ (_, _, x) -> x /= 0 &&  x < 4 ) list' 
  
  
+--main = test4 exampleList 
  
-exampleList = ["Rakovina",
+ 
+exampleList = [
+               "dagestan",
+               "arestant",
                "Gorod",
                "Zima",
                "Lazeyka",

@@ -3,6 +3,34 @@ namespace FSharpCalendar
 
 open System
 
+module TableMaker = 
+    let ajust (table : 'a[,]) takeWidth takeHeight =
+        
+        let getSlices table getLength getSlice =
+            let length = getLength table
+            let limit = length - 1
+            [0..limit] |> List.map (getSlice table)
+
+        let getRow table i = 
+            let lenght = table |> Array2D.length2
+            let limit = lenght - 1
+            [0..limit] 
+            |> List.map (fun j -> table.[i, j])
+
+        let getColumn table i = 
+            let lenght = table |> Array2D.length1
+            let limit = lenght - 1
+            [0..limit] 
+            |> List.map (fun j -> table.[j, i])
+
+        let getRows    table = getSlices table Array2D.length1 getRow
+        let getColumns table = getSlices table Array2D.length2 getColumn
+
+        let getMax table = getRows table
+
+        1
+
+
 module Calendar = 
     type Orientation = Hor | Ver
     let joinString sep x = x |> List.fold (fun state t -> state + sep + t) ""
