@@ -79,7 +79,7 @@ namespace FileRenamer
             var userAsker = new AskUser(new ConsoleUserAsker());
             var patternSelector = new Binder(new PatternSelector(userAsker)).GetPatternSelector();
             
-            new Explorer(new DirectoryProvider(new FileEnumerator(), new SongDirectoryConstructor())).Explore(pathToRoot, true, patternSelector.Select(), userAsker);
+            new Explorer(new DirectoryProvider(new FileEnumerator(new SimpleFileEnumerator()), new SongDirectoryConstructor())).Explore(pathToRoot, true, patternSelector.Select(), userAsker);
         }
     }
 }

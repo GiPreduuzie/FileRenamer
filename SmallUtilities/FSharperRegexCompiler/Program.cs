@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FSharperRegexCompiler
 {
-    class Program
+    public class Program
     {
         private static void Main(string[] args)
         {
@@ -17,7 +17,12 @@ namespace FSharperRegexCompiler
             stringBuilder.AppendLine(@"UNFINISHED_DELIMITED_COMMENT='(*'[^\)]{DELIMITED_COMMENT_SECTION}*");
             stringBuilder.AppendLine(@"DELIMITED_COMMENT={UNFINISHED_DELIMITED_COMMENT}{ASTERISKS}')'");
 
-            var result = Replace(stringBuilder.ToString());
+            Console.WriteLine(Do(stringBuilder.ToString()));
+        }
+
+        public static string Do(string input)
+        {
+            var result = Replace(input);
 
             var dictionary =
                 result
@@ -43,9 +48,7 @@ namespace FSharperRegexCompiler
                     x => x.Value.Replace(wrappedKey, resultDictionary[key]));
             }
 
-            //var result = resultDictionary.Values.Select(Replace);
-
-            Console.WriteLine(string.Join("\r\n", resultDictionary.Values));
+            return string.Join("\r\n", resultDictionary.Values);
         }
 
         public static string Replace(string value)
@@ -55,7 +58,7 @@ namespace FSharperRegexCompiler
             var list = new List<string>();
             foreach (var x in value)
             {
-                if (x == '\'')
+                if (x == '"')
                 {
                     if (inside)
                     {
@@ -78,7 +81,7 @@ namespace FSharperRegexCompiler
             }
             return
                 list
-                    .Select(x => new {Old = "'" + x + "'", New = x.Select(y => "\\" + y).Aggregate((current, y) => current + y)})
+                    .Select(x => new {Old = "\"" + x + "\"", New = x.Select(y => "\\" + y).Aggregate((current, y) => current + y)})
                     .Aggregate(value, (current, x) => current.Replace(x.Old, x.New));
         }
     }
