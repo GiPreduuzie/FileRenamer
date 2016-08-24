@@ -171,7 +171,6 @@ namespace FileRenamer
 
     public class Explorer
     {
-        private readonly string _pathToRoot;
         DirectoryProvider _directoryProvider;
 
         public Explorer(DirectoryProvider directoryProvider)
@@ -209,7 +208,7 @@ namespace FileRenamer
                 {
                     try
                     {
-                        var location = Path.Combine(_pathToRoot, "Processed and Corrected");
+                        var location = Path.Combine(pathToRoot, "Processed and Corrected");
                         var newLocation = song.Copy(location);
                         song.RemoveTags(newLocation);
                         song.Update(newLocation, namePattern);
