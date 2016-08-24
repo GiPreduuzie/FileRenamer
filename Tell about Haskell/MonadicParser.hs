@@ -119,6 +119,10 @@ addop = operator (namely '+') (+) `add` operator (namely '-') (-)
 mulop = operator (namely '*') (*) `add` operator (namely '/') div 
 
 
+
+--- Usage examples
+
+
 main = 
     do
        x <- getLine
